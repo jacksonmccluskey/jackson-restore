@@ -1,3 +1,6 @@
+// Copyright © 2024 Jackson McCluskey
+// GitHub @jacksonmccluskey [https://github.com/jacksonmccluskey]
+
 /* eslint-disable no-param-reassign */
 
 export const paginate = (schema: any) => {

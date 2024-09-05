@@ -5,13 +5,21 @@ require('dotenv').config();
 import mongoose from 'mongoose';
 import config from './config';
 import { queryDocumentsAndRestoreData } from './query';
+import cron from 'node-cron';
 
-const connectToMongoAndRestoreData = () => {
+const connectToMongoAndRestoreData = async () => {
 	try {
-		mongoose.connect(config.mongoose.url).then(async () => {
+		await mongoose.connect(config.mongoose.url).then(async () => {
 			await queryDocumentsAndRestoreData();
 		});
 	} catch {}
 };
 
-connectToMongoAndRestoreData();
+const task = cron.schedule('* * * * *', async () => {
+	await connectToMongoAndRestoreData();
+});
+
+process.on('SIGINT', () => {
+	task.stop();
+	process.exit(0);
+});

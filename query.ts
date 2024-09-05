@@ -1,3 +1,6 @@
+// Copyright © 2024 Jackson McCluskey
+// GitHub @jacksonmccluskey [https://github.com/jacksonmccluskey]
+
 import Log from './models';
 import config from './config';
 import { restoreDocuments } from './restore';
@@ -23,6 +26,9 @@ export const queryDocumentsAndRestoreData = async () => {
 			}
 		} catch {
 			hasMoreDocuments = false;
+			break;
 		}
+
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 	}
 };

@@ -4,7 +4,8 @@
 	"description": "Restore Data From MongoDB Backups To External API",
 	"main": "index.js",
 	"scripts": {
-		"restore": "npx ts-node connect.ts"
+		"build": "npm install && tsc --project ./",
+		"restore": "npm run build && node dist/connect.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -13,9 +14,13 @@
 		"axios": "^1.7.7",
 		"dotenv": "^16.4.5",
 		"mongoose": "^8.6.0",
+		"node-cron": "^3.0.3",
 		"npx": "^10.2.2",
 		"path": "^0.12.7",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.5.4"
+	},
+	"devDependencies": {
+		"@types/node-cron": "^3.0.11"
 	}
 }
