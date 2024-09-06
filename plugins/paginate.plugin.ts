@@ -1,6 +1,8 @@
 // Copyright © 2024 Jackson McCluskey
 // GitHub @jacksonmccluskey [https://github.com/jacksonmccluskey]
 
+import config from '../config';
+
 /* eslint-disable no-param-reassign */
 
 export const paginate = (schema: any) => {
@@ -43,10 +45,12 @@ export const paginate = (schema: any) => {
 			options.limit && parseInt(options.limit, 10) > 0
 				? parseInt(options.limit, 10)
 				: 10;
+
 		const page =
 			options.page && parseInt(options.page, 10) > 0
 				? parseInt(options.page, 10)
 				: 1;
+
 		const skip = (page - 1) * limit;
 
 		const countPromise = this.countDocuments(filter).exec();
@@ -68,14 +72,29 @@ export const paginate = (schema: any) => {
 		return Promise.all([countPromise, docsPromise]).then((values) => {
 			const [totalResults, results] = values;
 			const totalPages = Math.ceil(totalResults / limit);
-			const result = {
+
+			if (config.isScript)
+				console.log(
+					`Page: ${page}, Total Pages: ${totalPages}, Total Results: ${totalResults}, Results on this page: ${results.length}`
+				);
+
+			if (page > totalPages) {
+				return {
+					results: [],
+					page,
+					limit,
+					totalPages,
+					totalResults,
+				};
+			}
+
+			return {
 				results,
 				page,
 				limit,
 				totalPages,
 				totalResults,
 			};
-			return Promise.resolve(result);
 		});
 	};
 };

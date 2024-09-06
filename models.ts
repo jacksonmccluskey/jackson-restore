@@ -44,8 +44,8 @@ const logSchema = new mongoose.Schema(
 	}
 );
 
-logSchema.plugin(plugins.toJSON);
-logSchema.plugin(plugins.paginate);
+plugins.toJSON(logSchema);
+plugins.paginate(logSchema);
 
 /**
  * @typedef Log

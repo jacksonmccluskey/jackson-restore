@@ -12,7 +12,7 @@ Well, you can just use `jackson-restore` to query the `data` values from your `l
 
 Upon success, the log with your restored data will be deleted. If there is another failure, the log will remain to be processed by the next iteration of this program.
 
-Run this on a scheduled task to make sure your failed requests are always restored as soon as possible.
+Run this on a scheduled task `ENV=PRODUCTION` to make sure your failed requests are always restored as soon as possible.
 
 _Currently, the program does not make new requests through `jackson-load-balancer` because it would log a new error for each new failure resulting in exponential log growth if the destination API continues to fail. I am working on this._
 
@@ -20,14 +20,17 @@ _Currently, the program does not make new requests through `jackson-load-balance
 
 ```
 # SYSTEM
-ENV=JACKSON
+ENV=PRODUCTION
+# ANYTHING ELSE IS CONSIDERED A SCRIPT
 
 # ORIGIN
 MONGODB=mongodb://localhost:XXXX/YOUR_DATABASE
 COLLECTION=YOUR_LOGS_COLLECTION
+STATUS=YOUR_STATUS_PROPERTY
 DATA=YOUR_DATA_PROPERTY
 ROUTE=YOUR_URL_ROUTE
 LIMIT=10
+INTERVAL=1000
 
 # DESTINATION
 API=https://YOUR_DOMAIN
@@ -58,9 +61,11 @@ services:
       - ENV=TESTING
       - MONGODB=mongodb://...
       - COLLECTION=...
+      - STATUS=...
       - DATA=...
       - ROUTE=...
       - LIMIT=10
+      - INTERVAL=1000
       - API=https://...
       - AUTHORIZATION=Bearer ...
       - CONTENT_TYPE=application/json

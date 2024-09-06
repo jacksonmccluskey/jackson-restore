@@ -6,27 +6,24 @@ import config from './config';
 import Log from './models';
 
 export const restoreDocuments = async (documents: any[]) => {
-	for (const logDocument of documents) {
+	for (const document of documents) {
 		try {
-			const data = logDocument[config.data];
-			const route = logDocument[config.route];
+			const data = document[config.data];
+			const route = document[config.route];
 
-			if (!data || !route) {
+			if (data === undefined || route === undefined) {
+				if (config.isScript)
+					console.log(
+						`🟨 Skipping Document data: ${JSON.stringify(data).substring(
+							0,
+							24
+						)} route: ${route}`
+					);
 				continue;
 			}
 
-			console.log('url: ' + config.api + route + `?Environment=${config.env}`);
-			console.log('data: ' + JSON.stringify(data));
-			console.log(
-				'headers: ' +
-					JSON.stringify({
-						Authorization: config.authorization,
-						'Content-Type': config.contentType,
-					})
-			);
-
 			const response = await axios.post(
-				config.api + route + `?Environment=${config.env}`,
+				config.api + route + `?Environment=${config.env},Restore=true`,
 				data,
 				{
 					headers: {
@@ -37,10 +34,10 @@ export const restoreDocuments = async (documents: any[]) => {
 			);
 
 			if (response.status == 200) {
-				await Log.findByIdAndDelete(logDocument._id);
+				await Log.findByIdAndDelete(document._id);
 			}
-		} catch (error: any) {
-			console.log(error?.message);
+		} catch (error) {
+			if (config.isScript) console.log('🟥 ' + error.message);
 		}
 	}
 };

@@ -5,30 +5,53 @@ import Log from './models';
 import config from './config';
 import { restoreDocuments } from './restore';
 
-export const queryDocumentsAndRestoreData = async () => {
-	let hasMoreDocuments = true;
+export const queryDocumentsAndRestoreData = async (jacksonTracker: any) => {
+	jacksonTracker.isRunning = true;
+	jacksonTracker.isReady = false;
 
-	while (hasMoreDocuments) {
+	let page = 1;
+
+	while (true) {
 		try {
-			const logDocuments = await Log.find({ status: 'ERROR' }).limit(
-				config.limit
+			const queryForTheDocumentsThatWeAreRestoring = {
+				[config.status]: 'ERROR',
+				[config.route]: { $ne: undefined },
+				[config.data]: { $ne: undefined },
+			};
+
+			const totalDocumentsInitially = await Log.countDocuments(
+				queryForTheDocumentsThatWeAreRestoring
 			);
 
-			if (!logDocuments.length) {
-				hasMoreDocuments = false;
+			if (!totalDocumentsInitially) {
 				break;
 			}
 
-			await restoreDocuments(logDocuments);
+			const { results, totalPages } = await Log.paginate(
+				queryForTheDocumentsThatWeAreRestoring,
+				{
+					page,
+					limit: config.limit,
+				}
+			);
 
-			if (logDocuments.length < config.limit) {
-				hasMoreDocuments = false;
-			}
-		} catch {
-			hasMoreDocuments = false;
-			break;
+			await restoreDocuments(results);
+
+			if (page >= totalPages) break;
+
+			page++;
+		} catch (error) {
+			if (config.isScript) console.log(`🟥 ${error.message}`);
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, 1000));
+		await new Promise((resolve) => setTimeout(resolve, config.interval));
+	}
+
+	jacksonTracker.isRunning = false;
+	jacksonTracker.isReady = true;
+
+	if (config.isScript) {
+		console.log('😜👏 jackson-restore Complete!');
+		process.exit(0);
 	}
 };
