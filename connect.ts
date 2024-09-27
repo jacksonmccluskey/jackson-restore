@@ -6,40 +6,54 @@ require('dotenv').config();
 import mongoose from 'mongoose';
 import config from './config';
 import { queryDocumentsAndRestoreData } from './query';
-import cron from 'node-cron';
 
 export interface IJacksonTracker {
 	isRunning: boolean;
 	isReady: boolean;
 }
 
-const jacksonTracker = {
+const jacksonTracker: IJacksonTracker = {
 	isRunning: false,
 	isReady: true,
 };
 
-const connectToMongoAndRestoreData = async () => {
-	await mongoose.connect(config.mongoose.url);
-	await queryDocumentsAndRestoreData(jacksonTracker);
+const mongoURIs = config.mongoose.urls;
+
+const connectToMongoAndRestoreData = async (mongoURI: string) => {
+	console.log(`Connecting To Mongo URI: ${mongoURI}`);
+	await mongoose.connect(mongoURI);
+
+	try {
+		await queryDocumentsAndRestoreData({ jacksonTracker });
+	} catch (error) {
+		if (config.isScript)
+			console.log(`🟥 Error Processing URI ${mongoURI}: ${error?.message}`);
+	} finally {
+		await mongoose.disconnect();
+	}
 };
 
-if (config.isProduction) {
-	const task = cron.schedule(config.cronExpression, () => {
-		if (!jacksonTracker.isRunning && jacksonTracker.isReady) {
-			connectToMongoAndRestoreData();
-		}
-	});
-
-	process.on('SIGINT', () => {
-		task.stop();
-		process.exit(0);
-	});
-} else {
-	process.on('SIGINT', () => {
-		process.exit(0);
-	});
-
+const runTask = async () => {
 	if (!jacksonTracker.isRunning && jacksonTracker.isReady) {
-		connectToMongoAndRestoreData();
+		jacksonTracker.isRunning = true;
+
+		for (const mongoURI of mongoURIs) {
+			try {
+				await connectToMongoAndRestoreData(mongoURI);
+			} catch (error) {
+				if (config.isScript)
+					console.log(`🟥 Error During Task Execution: ${error?.message}`);
+			}
+		}
+
+		jacksonTracker.isRunning = false;
+
+		setTimeout(runTask, config.scriptInterval);
 	}
-}
+};
+
+runTask();
+
+process.on('SIGINT', () => {
+	process.exit(0);
+});

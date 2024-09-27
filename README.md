@@ -22,9 +22,10 @@ _Currently, the program does not make new requests through `jackson-load-balance
 # SYSTEM
 ENV=PRODUCTION
 # ANYTHING ELSE IS CONSIDERED A SCRIPT
+SCRIPT_INTERVAL=300000
 
 # ORIGIN
-MONGODB=mongodb://localhost:XXXX/YOUR_DATABASE
+MONGODB_URIs=mongodb://localhost:XXXX/YOUR_DATABASE_1,mongodb://localhost:XXXX/YOUR_DATABASE_2
 COLLECTION=YOUR_LOGS_COLLECTION
 STATUS=YOUR_STATUS_PROPERTY
 DATA=YOUR_DATA_PROPERTY
@@ -33,7 +34,7 @@ LIMIT=10
 INTERVAL=1000
 
 # DESTINATION
-API=https://YOUR_DOMAIN
+APIs=https://YOUR_DOMAIN_1,https://YOUR_DOMAIN_2
 AUTHORIZATION=YOUR_TOKEN
 CONTENT_TYPE="application/json"
 ```
@@ -59,14 +60,15 @@ services:
 
     environment:
       - ENV=TESTING
-      - MONGODB=mongodb://...
+      - SCRIPT_INTERVAL=300000
+      - MONGOD_URIs_=mongodb://...1,mongodb://...2
       - COLLECTION=...
       - STATUS=...
       - DATA=...
       - ROUTE=...
       - LIMIT=10
       - INTERVAL=1000
-      - API=https://...
+      - APIs=https://...1,https://...2
       - AUTHORIZATION=Bearer ...
       - CONTENT_TYPE=application/json
 

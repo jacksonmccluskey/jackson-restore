@@ -5,7 +5,11 @@ import axios from 'axios';
 import config from './config';
 import Log from './models';
 
-export const restoreDocuments = async (documents: any[]) => {
+export const restoreDocuments = async ({
+	documents,
+}: {
+	documents: any[];
+}): Promise<void> => {
 	for (const document of documents) {
 		try {
 			const data = document[config.data];
@@ -14,7 +18,7 @@ export const restoreDocuments = async (documents: any[]) => {
 			if (data === undefined || route === undefined) {
 				if (config.isScript)
 					console.log(
-						`🟨 Skipping Document data: ${JSON.stringify(data).substring(
+						`🟨 Skipping Document *data*: ${JSON.stringify(data).substring(
 							0,
 							24
 						)} route: ${route}`
@@ -22,19 +26,25 @@ export const restoreDocuments = async (documents: any[]) => {
 				continue;
 			}
 
-			const response = await axios.post(
-				config.api + route + `?Environment=${config.env},Restore=true`,
-				data,
-				{
-					headers: {
-						Authorization: config.authorization,
-						'Content-Type': config.contentType,
-					},
-				}
-			);
+			const currentAPI =
+				config.apis[Math.floor(Math.random() * config.apis.length)];
+
+			const currentURL =
+				currentAPI + route + `?Environment=${config.env},Restore=true`;
+
+			if (config.isScript)
+				console.log(`🚀 Attempting To Restore Document To ${currentURL}...`);
+
+			const response = await axios.post(currentURL, data, {
+				headers: {
+					Authorization: config.authorization,
+					'Content-Type': config.contentType,
+				},
+			});
 
 			if (response.status == 200) {
 				await Log.findByIdAndDelete(document._id);
+				console.log(`✅ Restored Document #${document._id}`);
 			}
 		} catch (error) {
 			if (config.isScript) console.log('🟥 ' + error.message);

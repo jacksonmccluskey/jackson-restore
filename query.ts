@@ -4,8 +4,13 @@
 import Log from './models';
 import config from './config';
 import { restoreDocuments } from './restore';
+import { IJacksonTracker } from './connect';
 
-export const queryDocumentsAndRestoreData = async (jacksonTracker: any) => {
+export const queryDocumentsAndRestoreData = async ({
+	jacksonTracker,
+}: {
+	jacksonTracker: IJacksonTracker;
+}) => {
 	jacksonTracker.isRunning = true;
 	jacksonTracker.isReady = false;
 
@@ -35,7 +40,7 @@ export const queryDocumentsAndRestoreData = async (jacksonTracker: any) => {
 				}
 			);
 
-			await restoreDocuments(results);
+			await restoreDocuments({ documents: results });
 
 			if (page >= totalPages) break;
 
