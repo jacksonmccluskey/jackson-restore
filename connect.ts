@@ -20,7 +20,7 @@ const jacksonTracker: IJacksonTracker = {
 const mongoURIs = config.mongoose.urls;
 
 const connectToMongoAndRestoreData = async (mongoURI: string) => {
-	console.log(`Connecting To Mongo URI: ${mongoURI}`);
+	console.log(`${mongoURI}`);
 	await mongoose.connect(mongoURI);
 
 	try {

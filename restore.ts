@@ -44,7 +44,8 @@ export const restoreDocuments = async ({
 
 			if (response.status == 200) {
 				await Log.findByIdAndDelete(document._id);
-				console.log(`✅ Restored Document #${document._id}`);
+				if (config.isScript)
+					console.log(`✅ Restored Document #${document._id}`);
 			}
 		} catch (error) {
 			if (config.isScript) console.log('🟥 ' + error.message);
