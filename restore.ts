@@ -14,14 +14,18 @@ export const restoreDocuments = async ({
 		try {
 			const data = document[config.data];
 			const route = document[config.route];
+			const attempts = document[config.attempts];
+			const passingStatusCodes = config.passingStatusCodes.map(
+				(passingStatusCode) => parseInt(passingStatusCode)
+			);
 
-			if (data === undefined || route === undefined) {
+			if (data === undefined || route === undefined || attempts > 3) {
 				if (config.isScript)
 					console.log(
 						`🟨 Skipping Document *data*: ${JSON.stringify(data).substring(
 							0,
 							24
-						)} route: ${route}`
+						)} route: ${route} attempts: ${attempts}`
 					);
 				continue;
 			}
@@ -42,13 +46,30 @@ export const restoreDocuments = async ({
 				},
 			});
 
-			if (response.status == 200) {
+			if (passingStatusCodes.includes(response.status)) {
 				await Log.findByIdAndDelete(document._id);
 				if (config.isScript)
 					console.log(`✅ Restored Document #${document._id}`);
+			} else {
+				await Log.findByIdAndUpdate(
+					document._id,
+					{ $inc: { attempts: 1 } },
+					{ new: true }
+				);
 			}
 		} catch (error) {
-			if (config.isScript) console.log('🟥 ' + error.message);
+			if (error.response && error.response.status === 404) {
+				await Log.findByIdAndDelete(document._id);
+				if (config.isScript)
+					console.log(`🔍 Deleted Document Not Found ${document._id}`);
+			} else {
+				if (config.isScript) console.log('🟥 ' + error.message);
+				await Log.findByIdAndUpdate(
+					document._id,
+					{ $inc: { attempts: 1 } },
+					{ new: true }
+				);
+			}
 		}
 	}
 };

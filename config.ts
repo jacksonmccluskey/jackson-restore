@@ -25,6 +25,10 @@ const config = {
 	authorization: process.env.AUTHORIZATION,
 	contentType: process.env.CONTENT_TYPE,
 	interval: process.env.INTERVAL ? parseInt(process.env.INTERVAL) : 1000,
+	attempts: process.env.ATTEMPTS,
+	passingStatusCodes: process.env.PASSING_STATUS_CODES.includes(',')
+		? process.env.PASSING_STATUS_CODES.split(',')
+		: [process.env.PASSING_STATUS_CODES],
 };
 
 export default config;
