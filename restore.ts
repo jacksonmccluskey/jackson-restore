@@ -38,8 +38,6 @@ export const restoreDocuments = async ({
 			const currentAPI =
 				config.apis[Math.floor(Math.random() * config.apis.length)];
 
-			console.log(`currentAPI: ${currentAPI}`);
-
 			const currentURL =
 				currentAPI +
 				extractApiPath(route) +
