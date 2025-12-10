@@ -19,9 +19,9 @@ const config = {
 	data: process.env.DATA,
 	route: process.env.ROUTE,
 	limit: process.env.LIMIT ? parseInt(process.env.LIMIT) : 1,
-	apis: process.env.APIs.includes(',')
-		? process.env.APIs.split(',')
-		: [process.env.APIs],
+	apis: process.env['APIS'].includes(',')
+		? process.env['APIS'].split(',')
+		: [process.env['APIS']],
 	authorization: process.env.AUTHORIZATION,
 	contentType: process.env.CONTENT_TYPE,
 	interval: process.env.INTERVAL ? parseInt(process.env.INTERVAL) : 1000,

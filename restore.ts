@@ -5,6 +5,11 @@ import axios from 'axios';
 import config from './config';
 import Log from './models';
 
+export function extractApiPath(url: string): string {
+	const index = url.indexOf('/api');
+	return index !== -1 ? url.slice(index) : '';
+}
+
 export const restoreDocuments = async ({
 	documents,
 }: {
@@ -33,8 +38,12 @@ export const restoreDocuments = async ({
 			const currentAPI =
 				config.apis[Math.floor(Math.random() * config.apis.length)];
 
+			console.log(`currentAPI: ${currentAPI}`);
+
 			const currentURL =
-				currentAPI + route + `?Environment=${config.env},Restore=true`;
+				currentAPI +
+				extractApiPath(route) +
+				`?Environment=${config.env},Restore=true`;
 
 			if (config.isScript)
 				console.log(`🚀 Attempting To Restore Document To ${currentURL}...`);
